@@ -1,5 +1,5 @@
 const db = require("../db");
-const sqlForPartialUpdate = require("..helpers/partialUpdate");
+const sqlForPartialUpdate = require("../helpers/partialUpdate");
 const expressError = require("../helpers/expressError");
 
 class Company {
@@ -11,14 +11,14 @@ class Company {
    * 
     search takes in a term, and optional min and max employees. 
    */
-  static async search(searchTerm, min_employees = 0, max_employees = Infinity) {
+  static async search(searchTerm, min_employees = 0, max_employees = 10000) {
     let q = `%${searchTerm}%`;
     const results = await db.query(
       `SELECT handle, name 
       FROM companies 
       WHERE LOWER(handle) ILIKE $1 
-      OR LOWER(name) ILIKE $1
-      FILTER WHERE(num_employees >= $2 AND num_employees <= $3)`,
+        OR LOWER(name) ILIKE $1
+        AND num_employees >= $2 AND num_employees <= $3`,
       [q, min_employees, max_employees]
     );
     return results.rows;
@@ -59,9 +59,13 @@ class Company {
       description,
       logo_url
     }
-    // KEY AND ID
-    const result = sqlForPartialUpdate("companies", items, key, id)
-
+    const { query, values } = sqlForPartialUpdate("companies", items, "handle", handle)
+    console.log("VALUES IS....", values);
+    console.log("QUERY IS....", query);
+    const result = await db.query(query, [...values]);
+    return result.rows[0];
   }
 
 }
+
+module.exports = Company;

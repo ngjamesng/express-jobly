@@ -1,5 +1,4 @@
 CREATE TABLE companies (
-
   handle text PRIMARY KEY,
   name text NOT NULL UNIQUE,
   num_employees int,
@@ -7,10 +6,10 @@ CREATE TABLE companies (
   logo_url text
 );
 
-CREATE TABLE jobs (
+-- CREATE TABLE jobs (
 
-)
+-- )
 
-CREATE TABLE users (
+-- CREATE TABLE users (
 
-)
+-- )
