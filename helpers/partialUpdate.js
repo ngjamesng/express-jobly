@@ -20,9 +20,10 @@ function sqlForPartialUpdate(table, items, key, id) {
   let columns = [];
 
   // filter out keys that start with "_" -- we don't want these in DB
-  for (let key in items) {
-    if (key.startsWith("_")) {
-      delete items[key];
+  for (let item in items) {
+    //renamed "key in items" to "item in items"
+    if (item.startsWith("_")) {
+      delete items[item];
     }
   }
 
@@ -40,5 +41,11 @@ function sqlForPartialUpdate(table, items, key, id) {
 
   return { query, values };
 }
+/* TODO****************** 
+WRITE UNIT TEST LATER.
+
+will need to create database and look at values. 
+*/
+
 
 module.exports = sqlForPartialUpdate;
