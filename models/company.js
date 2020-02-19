@@ -11,7 +11,7 @@ class Company {
    * 
     search takes in a term, and optional min and max employees. 
    */
-  static async search(searchTerm, min_employees = 0, max_employees = 10000) {
+  static async search(searchTerm, min_employees = 0, max_employees = 1000000) {
     let q = `%${searchTerm}%`;
     const results = await db.query(
       `SELECT handle, name 
