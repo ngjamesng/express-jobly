@@ -6,14 +6,15 @@ const db = require("../db");
 const config = require("../config");
 const ExpressError = require("../helpers/expressError");
 const jsonSchema = require("jsonschema");
-const jobSchema = require("../schemas/jobSchema.json");
+const jobCreateSchema = require("../schemas/jobCreateSchema.json");
+const jobUpdateSchema = require("../schemas/jobUpdateSchema.json");
 
 const router = new express.Router();
 
 // create a new job, returns newly created => {job: jobData}
 router.post("/", async function (req, res, next) {
   try {
-    const result = jsonSchema.validate(req.body, jobSchema);
+    const result = jsonSchema.validate(req.body, jobCreateSchema);
     if (!result.valid) {
       //Throws listOfErrors if !result.valid
       throw new ExpressError(result.errors.map((e) => e.stack), 400);
@@ -62,7 +63,7 @@ router.get("/:id", async function (req, res, next) {
  */
 router.patch("/:id", async function (req, res, next) {
   try {
-    const result = jsonSchema.validate(req.body, jobSchema);
+    const result = jsonSchema.validate(req.body, jobUpdateSchema);
     if (!result.valid) {
       //Throws listOfErrors if !result.valid
       throw new ExpressError(result.errors.map((e) => e.stack), 400);
