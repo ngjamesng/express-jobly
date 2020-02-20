@@ -1,3 +1,5 @@
+//ROUTES FOR /COMPANIES
+
 const express = require("express");
 const Company = require("../models/company");
 const db = require("../db");
@@ -7,20 +9,6 @@ const jsonSchema = require("jsonschema");
 const companySchema = require("../schemas/companySchema.json");
 
 const router = new express.Router();
-
-//returns a list of companies => {companies: [companyData, ...]}
-router.get("/", async function (req, res, next) {
-	try {
-		const { search: searchTerm, min_employees, max_employees } = req.body;
-		if (min_employees > max_employees) {
-			throw new ExpressError("min_employees cannot be greater than max_employees", 400);
-		}
-		const companies = await Company.search(searchTerm, max_employees, min_employees);
-		return res.json({ companies });
-	} catch (err) {
-		return next(err);
-	}
-});
 
 // create a new company, returns newly created => {company: companyData}
 router.post("/", async function (req, res, next) {
@@ -41,17 +29,33 @@ router.post("/", async function (req, res, next) {
 	}
 });
 
+//returns a list of companies => {companies: [companyData, ...]}
+router.get("/", async function (req, res, next) {
+	try {
+		const { search: searchTerm, min_employees, max_employees } = req.body;
+		if (min_employees > max_employees) {
+			throw new ExpressError("min_employees cannot be greater than max_employees", 400);
+		}
+		const companies = await Company.search(searchTerm, max_employees, min_employees);
+		return res.json({ companies });
+	} catch (err) {
+		return next(err);
+	}
+});
+
 /**  GET/companies/[handle]
- get company by handle => return {company: companyData}
+ get company by handle => return {company: {...companyData, jobs: [job, ...]}}
 */
 router.get("/:handle", async function (req, res, next) {
 	try {
 		const handle = req.params.handle;
 		const company = await Company.get(handle);
 		if (!company) {
-			throw new ExpressError(`No such company: ${handle}`);
+			throw new ExpressError(`No such company with handle: ${handle}`, 404);
 		}
-		return res.json({ company });
+
+		const companyJobs = await Company.getCompanyJobs(handle);
+		return res.json({ company, jobs: companyJobs });
 	} catch (err) {
 		return next(err);
 	}
@@ -62,20 +66,42 @@ router.get("/:handle", async function (req, res, next) {
  */
 router.patch("/:handle", async function (req, res, next) {
 	try {
+		if ("handle" in req.body) {
+			throw new ExpressError("Not allowed to change handle", 400);
+		}
+
 		const result = jsonSchema.validate(req.body, companySchema);
 		if (!result.valid) {
 			//Throws listOfErrors if !result.valid
 			throw new ExpressError(result.errors.map((e) => e.stack), 400);
 		}
+
 		const handle = req.params.handle;
 		const company = await Company.update(handle, req.body);
 		if (!company) {
-			throw new ExpressError(`No such company: ${handle}`);
+			throw new ExpressError(`No such company with handle: ${handle}`, 404);
 		}
 		return res.json({ company });
 	} catch (err) {
 		return next(err);
 	}
 });
+
+/** DELETE/companies/[handle] 
+ * Deletes an existing company by handle */
+router.delete("/:handle", async function (req, res, next) {
+	try {
+		const handle = req.params.handle;
+		const company = await Company.delete(handle);
+		if (!company) {
+			throw new ExpressError(`Cannot delete company handle: ${handle}`, 404);
+		}
+		return res.json({ message: "Company deleted" });
+	}
+	catch (err) {
+		return next(err);
+	}
+});
+
 
 module.exports = router;
