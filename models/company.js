@@ -25,7 +25,7 @@ class Company {
   }
 
   /** Create new company */
-  static async create(handle, name, num_employees, description, logo_url) {
+  static async create({ handle, name, num_employees, description, logo_url }) {
     const results = await db.query(
       `INSERT INTO companies 
         (handle, name, num_employees, description, logo_url)
@@ -51,17 +51,17 @@ class Company {
 
   /** Update exisiting company by handle */
   static async update(handle, body) {
-    const { handle: newHandle, name, num_employees, description, logo_url } = body;
-    const items = {
-      handle: newHandle,
-      name,
-      num_employees,
-      description,
-      logo_url
-    }
-    const { query, values } = sqlForPartialUpdate("companies", items, "handle", handle)
-    console.log("VALUES IS....", values);
-    console.log("QUERY IS....", query);
+    // const { handle: newHandle, name, num_employees, description, logo_url } = body;
+    // const items = {
+    //   handle: newHandle,
+    //   name,
+    //   num_employees,
+    //   description,
+    //   logo_url
+    // }
+    const { query, values } = sqlForPartialUpdate("companies", body, "handle", handle)
+    // console.log("VALUES IS....", values);
+    // console.log("QUERY IS....", query);
     const result = await db.query(query, [...values]);
     return result.rows[0];
   }

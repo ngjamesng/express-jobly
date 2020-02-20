@@ -30,9 +30,9 @@ router.post("/", async function (req, res, next) {
 			//Throws listOfErrors if !result.valid
 			throw new ExpressError(result.errors.map((e) => e.stack), 400);
 		}
-		const { handle, name, num_employees, description, logo_url } = req.body;
+		// const { handle, name, num_employees, description, logo_url } = req.body;
 		//Should we just pass in req.body, or individually pass in data?
-		const newCompany = await Company.create(handle, name, num_employees, description, logo_url);
+		const newCompany = await Company.create(req.body);
 		return res
 			.status(201)
 			.json({ company: newCompany });
