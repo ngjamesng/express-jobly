@@ -5,19 +5,18 @@ const db = require("../../db");
 process.env.NODE_ENV === "test";
 
 
-let handle;
 beforeAll(async function(){
 
   //INSERT A DUMMY COMPANY
   await db.query("DELETE FROM companies");
   
-  handle = "testHandle1";
+  
   let result = await db.query(
     `INSERT INTO companies 
     (handle, name, num_employees, description, logo_url)
-    VALUES ('${handle}', 'testName1', 1000, 'testdescription1', 'urlgoeshere')
+    VALUES ('testHandle1', 'testName1', 1000, 'testdescription1', 'urlgoeshere')
     `
-    );
+  );
     
     //INSERT A JOB
   await db.query("DELETE FROM jobs");
@@ -26,12 +25,11 @@ beforeAll(async function(){
   const salary = 120000;
   const equity = 0.5;
   const company_handle = "testHandle1"
-  // const [title, salary, equity, company_handle] = ["testTitle", 120000, 0.5, "testHandle"]
   await db.query(
     `INSERT INTO jobs 
   (title, salary, equity, company_handle)
-  VALUES ('${title}', ${salary}, ${equity}, '${company_handle}')`)
-})
+  VALUES ('testitle', 120000, 0.5, 'testHandle1')`)
+});
 
 /** CREATE Routes */
 describe("Should be able to create a job, POST to /jobs", async function(){
@@ -42,12 +40,12 @@ describe("Should be able to create a job, POST to /jobs", async function(){
         "title": "testTitle2",
         "salary": 130000,
         "equity": 0.5,
-        "company_handle": handle
-      })
+        "company_handle": "testHandle1"
+      });
       expect(response.status).toEqual(201);
-      expect(!!response.body.job).toEqual(true);
-      expect(response.body.job.company_handle).toEqual(handle);
-  })
+      expect(response.body.job.salary).toEqual(130000);
+      expect(response.body.job.company_handle).toEqual("testHandle1");
+  });
 
 //incorrect outputs
   test("does not post if nonexistent company handle is supplied", async function(){
@@ -58,11 +56,11 @@ describe("Should be able to create a job, POST to /jobs", async function(){
         "salary": 130000,
         "equity": 0.5,
         "company_handle": "nonexistent"
-      })
+      });
       expect(response.status).toEqual(500);
-      expect(!!response.body.job).toEqual(false);
-  })
-})
+      //need to test response.body
+  });
+});
 
 
 
@@ -80,7 +78,7 @@ describe("get routes for all jobs", async function(){
     const response = await request(app)
       .get(`/jobs/1`)
     expect(response.status).toEqual(200);
-    expect(response.body.job.company_handle).toEqual(handle);
+    expect(response.body.job.company_handle).toEqual("testHandle1");
   })
 
   test("should return an error if a nonexistent job ID does not exist at GET /jobs/:id", async function(){
@@ -88,7 +86,7 @@ describe("get routes for all jobs", async function(){
       .get(`/jobs/0`)
     expect(response.status).toEqual(404);
     expect(response.body.status).toEqual(404);
-    expect(!response.body.message).toEqual(false);
+    expect(response.body.message).toEqual("No such job of id: 0");
   })
 
   test("should return an array of companies if a search term matches at GET /jobs/", async function(){
@@ -96,12 +94,13 @@ describe("get routes for all jobs", async function(){
       .get("/jobs")
       .send({
         search: "t",
-        min_salary: 100,
+        min_salary: 125000,
         min_equity: 0.1
       })
     expect(response.status).toEqual(200);
-    expect(response.body.jobs.length).toEqual(2);
-    expect(response.body.jobs[0].company_handle).toEqual(handle);
+    // two jobs in the DB, salaries are 120000 and 130000
+    expect(response.body.jobs.length).toEqual(1);
+    expect(response.body.jobs[0].company_handle).toEqual("testHandle1");
   })
 
 })
@@ -127,11 +126,11 @@ describe("update an existing job at PATCH /jobs/:id", async function(){
     .send({
       title: "newTitle",
       salary: 1000000,
-      equity: 1.0
+      equity: 0.5
     })
   expect(response.status).toEqual(404);
   expect(response.body.status).toEqual(404);
-  expect(!!response.body.message).toEqual(true);
+  expect(response.body.message).toEqual("No such job of id: 0");
   })
 })
 
@@ -153,7 +152,7 @@ describe("delete routes testing", async function(){
 
     expect(response.status).toEqual(404);
     expect(response.body.status).toEqual(404);
-    expect(!!response.body.message).toEqual(true);
+    expect(response.body.message).toEqual("Cannot delete job of id: 0");
 
   })
 })

@@ -2,7 +2,6 @@
 
 const db = require("../db");
 const sqlForPartialUpdate = require("../helpers/partialUpdate");
-const expressError = require("../helpers/expressError");
 
 class Job {
   /**
