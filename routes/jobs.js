@@ -2,8 +2,6 @@
 
 const express = require("express");
 const Job = require("../models/job");
-const db = require("../db");
-const config = require("../config");
 const ExpressError = require("../helpers/expressError");
 const jsonSchema = require("jsonschema");
 const jobCreateSchema = require("../schemas/jobCreateSchema.json");
