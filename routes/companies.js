@@ -8,10 +8,12 @@ const ExpressError = require("../helpers/expressError");
 const jsonSchema = require("jsonschema");
 const companySchema = require("../schemas/companySchema.json");
 
+const { authenticateJWT, ensureAdmin } = require("../middleware/auth")
+
 const router = new express.Router();
 
 // create a new company, returns newly created => {company: companyData}
-router.post("/", async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
 	try {
 		const result = jsonSchema.validate(req.body, companySchema);
 		if (!result.valid) {
@@ -30,7 +32,7 @@ router.post("/", async function (req, res, next) {
 });
 
 //returns a list of companies => {companies: [companyData, ...]}
-router.get("/", async function (req, res, next) {
+router.get("/", authenticateJWT, async function (req, res, next) {
 	try {
 		const { search: searchTerm, min_employees, max_employees } = req.body;
 		if (min_employees > max_employees) {
@@ -46,7 +48,7 @@ router.get("/", async function (req, res, next) {
 /**  GET/companies/[handle]
  get company by handle => return {company: {...companyData, jobs: [job, ...]}}
 */
-router.get("/:handle", async function (req, res, next) {
+router.get("/:handle", authenticateJWT, async function (req, res, next) {
 	try {
 		const handle = req.params.handle;
 		const company = await Company.get(handle);
@@ -64,7 +66,7 @@ router.get("/:handle", async function (req, res, next) {
 /** Updates an existing company by handle
  * returns updated company info => return {company: companyData}
  */
-router.patch("/:handle", async function (req, res, next) {
+router.patch("/:handle", ensureAdmin, async function (req, res, next) {
 	try {
 		if ("handle" in req.body) {
 			throw new ExpressError("Not allowed to change handle", 400);
@@ -89,7 +91,7 @@ router.patch("/:handle", async function (req, res, next) {
 
 /** DELETE/companies/[handle] 
  * Deletes an existing company by handle */
-router.delete("/:handle", async function (req, res, next) {
+router.delete("/:handle", ensureAdmin, async function (req, res, next) {
 	try {
 		const handle = req.params.handle;
 		const company = await Company.delete(handle);
