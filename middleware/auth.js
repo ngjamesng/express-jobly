@@ -15,6 +15,7 @@ function authenticateJWT(req, res, next) {
 
 function ensureCorrectUser(req, res, next) {
 	try {
+    // may need to change this. Can replicate/forge being the correct user in the req.body
 		if (req.body.user.username === req.params.username) {
 			return next();
 		} else {
