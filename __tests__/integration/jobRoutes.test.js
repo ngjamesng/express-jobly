@@ -7,21 +7,24 @@ process.env.NODE_ENV === "test";
 
 beforeAll(async function(){
 
+  //INSERT A DUMMY COMPANY
   await db.query("DELETE FROM companies");
   
   
-  await db.query(
+  let result = await db.query(
     `INSERT INTO companies 
     (handle, name, num_employees, description, logo_url)
     VALUES ('testHandle1', 'testName1', 1000, 'testdescription1', 'urlgoeshere')
     `
-    );
+  );
     
     //INSERT A JOB
-    await db.query("DELETE FROM jobs");
-    await db.query("ALTER SEQUENCE jobs_id_seq RESTART WITH 1")
-    
-    //INSERT A DUMMY COMPANY
+  await db.query("DELETE FROM jobs");
+  await db.query("ALTER SEQUENCE jobs_id_seq RESTART WITH 1")
+  const title = "testitle";
+  const salary = 120000;
+  const equity = 0.5;
+  const company_handle = "testHandle1"
   await db.query(
     `INSERT INTO jobs 
   (title, salary, equity, company_handle)
