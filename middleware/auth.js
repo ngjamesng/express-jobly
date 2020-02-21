@@ -9,14 +9,15 @@ function authenticateJWT(req, res, next) {
 		return next();
 	} catch (err) {
     return next({ status: 401, message: "Unauthorized" });
-		return next(err);
 	}
 }
 
 function ensureCorrectUser(req, res, next) {
 	try {
-    // may need to change this. Can replicate/forge being the correct user in the req.body
-		if (req.body.user.username === req.params.username) {
+		// may need to change this. Can replicate/forge being the correct user in the req.body
+		const tokenFromBody = req.body._token;
+		const payload = jwt.decode(tokenFromBody);
+		if (payload.username === req.params.username) {
 			return next();
 		} else {
 			return next({ status: 401, message: "Unauthorized" });
@@ -28,7 +29,9 @@ function ensureCorrectUser(req, res, next) {
 
 function ensureAdmin(req, res, next) {
 	try {
-		if (req.body.user.is_admin === true) {
+		const tokenFromBody = req.body._token;
+		payload = jwt.decode(tokenFromBody);
+		if (payload.is_admin === true) {
 			return next();
 		} else {
 			return next({ status: 401, message: "Unauthorized" });

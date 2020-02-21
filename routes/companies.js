@@ -55,9 +55,7 @@ router.get("/:handle", authenticateJWT, async function (req, res, next) {
 		if (!company) {
 			throw new ExpressError(`No such company with handle: ${handle}`, 404);
 		}
-
-		const companyJobs = await Company.getCompanyJobs(handle);
-		return res.json({ company, jobs: companyJobs });
+		return res.json({ company });
 	} catch (err) {
 		return next(err);
 	}

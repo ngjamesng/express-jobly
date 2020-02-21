@@ -37,28 +37,42 @@ class Company {
   }
 
   /** Get a company by HANDLE */
+  // static async get(handle) {
+  //   const result = await db.query(
+  //     `SELECT handle, name, num_employees, description, logo_url 
+  //       FROM companies
+  //       WHERE handle = $1`,
+  //     [handle]
+  //   );
+
+  //   return result.rows[0];
+  // }
+
   static async get(handle) {
     const result = await db.query(
-      `SELECT handle, name, num_employees, description, logo_url 
+      `SELECT handle, name, num_employees, description, logo_url, json_agg(jobs.*) AS jobs
         FROM companies
-        WHERE handle = $1`,
+        JOIN jobs
+        ON jobs.company_handle = companies.handle
+        WHERE handle = $1
+        GROUP BY handle`,
       [handle]
     );
 
     return result.rows[0];
   }
-
+  
   /** Get a company's jobs by HANDLE */
-  static async getCompanyJobs(handle) {
-    const result = await db.query(
-      `SELECT id, title, salary, equity, date_posted
-        FROM jobs
-        WHERE company_handle = $1`,
-      [handle]
-    );
+  // static async getCompanyJobs(handle) {
+  //   const result = await db.query(
+  //     `SELECT id, title, salary, equity, date_posted
+  //       FROM jobs
+  //       WHERE company_handle = $1`,
+  //     [handle]
+  //   );
 
-    return result.rows;
-  }
+  //   return result.rows;
+  // }
 
   /** Update exisiting company by handle */
   static async update(handle, body) {

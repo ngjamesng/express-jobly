@@ -73,13 +73,19 @@ class User {
 
 	static async authenticate(body) {
 		const { username, password } = body;
-		const result = await db.query("SELECT password FROM users WHERE username = $1", [ username ]);
+		const result = await db.query(
+			`SELECT username, password, is_admin 
+			FROM users 
+			WHERE username = $1`, 
+			[ username ]
+		);
 		let user = result.rows[0];
 
 		if (user) {
 			if ((await bcrypt.compare(password, user.password)) === true) {
 				let { username, is_admin } = user;
 				let payload = { username, is_admin };
+				console.log("PAYLOAD>>>>>", payload);
 				let token = jwt.sign(payload, SECRET_KEY);
 				return token;
 			}
