@@ -52,16 +52,18 @@ class Company {
     const result = await db.query(
       `SELECT handle, name, num_employees, description, logo_url, json_agg(jobs.*) AS jobs
         FROM companies
-        JOIN jobs
+        FULL OUTER JOIN jobs
         ON jobs.company_handle = companies.handle
         WHERE handle = $1
         GROUP BY handle`,
       [handle]
     );
-
+    if (result.rows[0].jobs[0] === null) {
+      result.rows[0].jobs = [];
+    }
     return result.rows[0];
   }
-  
+
   /** Get a company's jobs by HANDLE */
   // static async getCompanyJobs(handle) {
   //   const result = await db.query(

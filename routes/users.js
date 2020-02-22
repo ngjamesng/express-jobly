@@ -22,7 +22,7 @@ router.post("/", async function (req, res, next) {
     const _token = await User.authenticate(req.body);
     return res
       .status(201)
-      .json({ user: newUser, _token:_token });
+      .json({ user: newUser, _token: _token });
   }
   catch (err) {
     return next(err);
@@ -45,6 +45,7 @@ router.get("/:username", ensureCorrectUser, async function (req, res, next) {
   try {
     const username = req.params.username;
     const user = await User.get(username);
+    console.log("USER......", user);
     if (!user) {
       throw new ExpressError(`No such user: ${username}`, 404);
     }

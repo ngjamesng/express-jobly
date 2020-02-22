@@ -18,7 +18,7 @@ class User {
         (username, password, first_name, last_name, email, photo_url)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING username, password, first_name, last_name, email, photo_url, is_admin`,
-			[ username, hashedPassword, first_name, last_name, email, photo_url ]
+			[username, hashedPassword, first_name, last_name, email, photo_url]
 		);
 
 		return results.rows[0];
@@ -38,12 +38,24 @@ class User {
 	/** Get user by username
    * GET/users/[username]
    */
+	// static async get(username) {
+	// 	const results = await db.query(
+	// 		`SELECT username, first_name, last_name, email, photo_url
+	//       FROM users
+	//       WHERE username = $1`,
+	// 		[ username ]
+	// 	);
+	// 	return results.rows[0];
+	// }
+
 	static async get(username) {
 		const results = await db.query(
-			`SELECT username, first_name, last_name, email, photo_url
-        FROM users
-        WHERE username = $1`,
-			[ username ]
+			`SELECT users.username, users.first_name, users.last_name, users.email, users.photo_url, json_agg((applications.job_id, applications.state)) AS applications
+				FROM users
+				JOIN applications ON users.username = applications.username
+				WHERE users.username = $1
+				GROUP BY users.username`,
+			[username]
 		);
 		return results.rows[0];
 	}
@@ -55,7 +67,7 @@ class User {
 		// doesn't throw an error if a nonexistent company handle is passed in
 		const items = { username: newUsername, first_name, last_name, email, photo_url, is_admin };
 		const { query, values } = sqlForPartialUpdate("users", items, "username", username);
-		const result = await db.query(query, [ ...values ]);
+		const result = await db.query(query, [...values]);
 		return result.rows[0];
 	}
 
@@ -65,7 +77,7 @@ class User {
 			`DELETE from users
         WHERE username = $1
         RETURNING username`,
-			[ username ]
+			[username]
 		);
 
 		return result.rows[0];
@@ -76,8 +88,8 @@ class User {
 		const result = await db.query(
 			`SELECT username, password, is_admin 
 			FROM users 
-			WHERE username = $1`, 
-			[ username ]
+			WHERE username = $1`,
+			[username]
 		);
 		let user = result.rows[0];
 
@@ -85,7 +97,6 @@ class User {
 			if ((await bcrypt.compare(password, user.password)) === true) {
 				let { username, is_admin } = user;
 				let payload = { username, is_admin };
-				console.log("PAYLOAD>>>>>", payload);
 				let token = jwt.sign(payload, SECRET_KEY);
 				return token;
 			}

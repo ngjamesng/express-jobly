@@ -24,3 +24,10 @@ CREATE TABLE users (
   photo_url TEXT,
   is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+CREATE TABLE applications (
+  username TEXT PRIMARY KEY REFERENCES users(username),
+  job_id int REFERENCES jobs(id),
+  state TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT current_timestamp
+);
